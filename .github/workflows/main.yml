@@ -1,0 +1,34 @@
+name: Build VansonLoader Dylib
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Theos Environment
+        uses: Randomblock1/theos-action@v1
+        # 会设置 THEOS 环境变量，并拉取 theos + sdks
+
+      - name: Build Package
+        run: |
+          make clean
+          make package FINALPACKAGE=1 DEBUG=0
+          echo "==== packages ===="
+          ls -la packages/ || true
+          echo "==== .theos/obj ===="
+          find .theos/obj -name "*.dylib" -o -name "*.deb" 2>/dev/null | head -50 || true
+
+      - name: Upload Dylib Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VansonLoader-Dylib
+          path: |
+            packages/*.deb
+            .theos/obj/**/*.dylib
+          if-no-files-found: warn
