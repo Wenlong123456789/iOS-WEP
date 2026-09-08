@@ -19,6 +19,27 @@
 #define VERSION_STRING @"unknown"
 #endif
 
+// 主题色（原 Internal 中的内联函数，精简时遗漏导致编译失败）
+static inline UIColor *VLAccentColor(void) {
+    return [UIColor colorWithRed:0.18 green:0.96 blue:0.86 alpha:1.0];
+}
+
+static inline UIColor *VLSecondaryAccentColor(void) {
+    return [UIColor colorWithRed:0.56 green:0.38 blue:1.00 alpha:1.0];
+}
+
+static inline UIColor *VLPanelBackgroundColor(void) {
+    return [UIColor colorWithRed:0.040 green:0.043 blue:0.060 alpha:0.97];
+}
+
+static inline UIColor *VLSurfaceColor(void) {
+    return [UIColor colorWithRed:0.075 green:0.080 blue:0.105 alpha:0.92];
+}
+
+static inline UIColor *VLStrokeColor(void) {
+    return [VLAccentColor() colorWithAlphaComponent:0.22];
+}
+
 UIWindow *GetSafeWindow(void);
 void showToast(NSString *msg);
 
