@@ -3,6 +3,7 @@
  * 仅保留内存扫描/修改 + 面板生命周期
  */
 
+#import "VLPanel.h"
 #import "VLPanel+Internal.h"
 #import "VLPanelSizeHelper.h"
 #import <stdlib.h>
