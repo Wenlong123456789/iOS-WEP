@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface VLFloatingButton : UIButton
 
 + (instancetype)sharedButton;
++ (void)installIfNeeded;          // 新增
 + (UIImage *)iconImage;
 
 @end
