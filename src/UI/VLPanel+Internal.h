@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 #import "../Engine/VLMemEngine.h"
 #import "../Utils/VLLocalization.h"
-#import "../Utils/VLIconManager.h"
+#import "../Utils/VLThemeManager.h"
 #import "VLMemoryBrowser.h"
 #import "VLFloatingButton.h"
 #import "VLMemResults.h"
@@ -146,5 +146,6 @@ static const NSInteger kPageSize = 50;
 - (void)handleMemResultLongPress:(UILongPressGestureRecognizer *)gr;
 - (void)onMemFuzzySelected:(id)sender;
 - (void)onTest1Tapped;
+- (void)onTest2Tapped;          // 测试二
 - (void)updateMemLocks;
 @end
