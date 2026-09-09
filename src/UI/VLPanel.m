@@ -182,10 +182,6 @@ VMemDataType g_currentType = VMemDataTypeI32;
 - (void)onMemItemLocked:(NSNotification *)note {}
 - (void)onMemItemUnlocked:(NSNotification *)note {}
 
-- (void)updateMemLocks {
-    // 由 Memory category 实现刷新锁定值
-}
-
 #pragma mark - TableView (memory only)
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
