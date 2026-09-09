@@ -7,10 +7,7 @@
 #import "VLWindowSwitches.h"
 #import "VLMemorySearch.h"
 #import "VLMemoryBrowser.h"
-#import "VLToolbox.h"
 #import "VLMemResults.h"
-#import "VLWatchOverlay.h"
-#import "../Engine/VLDebugEngine.h"
 #import "../Utils/VLLocalization.h"
 #import "../Utils/VLIconManager.h"
 
@@ -72,14 +69,8 @@ static NSString * const kWindowStatesKey = @"VLWindowStates";
         [VLMemorySearchVC showMinimized];
         [VLMemResults showMinimized];
     }
-    if ([self loadWindowState:1002]) {
-        [VLToolbox showMinimized];
-    }
     if ([self loadWindowState:1003]) {
         [VLMemoryBrowserVC showMinimized];
-    }
-    if ([self loadWindowState:1005] && [VLDebugEngine isAvailable]) {
-        [VLWatchOverlay showMinimized];
     }
 }
 
@@ -112,17 +103,7 @@ static NSString * const kWindowStatesKey = @"VLWindowStates";
     y += rowHeight + rowSpacing;
     
     // ═══════════════════════════════════════════
-    // 2. 工具箱窗口
-    // ═══════════════════════════════════════════
-    [self createCompactWindowRow:VL(@"Toolbox_Title")
-                           width:boxWidth
-                              at:y
-                       container:container
-                             tag:1002];
-    y += rowHeight + rowSpacing;
-    
-    // ═══════════════════════════════════════════
-    // 3. 内存浏览器窗口
+    // 2. 内存浏览器窗口
     // ═══════════════════════════════════════════
     [self createCompactWindowRow:VL(@"Mem_Browser_Title")
                            width:boxWidth
@@ -130,18 +111,6 @@ static NSString * const kWindowStatesKey = @"VLWindowStates";
                        container:container
                              tag:1003];
     y += rowHeight + rowSpacing;
-    
-    // ═══════════════════════════════════════════
-    // 4. 硬件断点监控 (仅越狱环境)
-    // ═══════════════════════════════════════════
-    if ([VLDebugEngine isAvailable]) {
-        [self createCompactWindowRow:VL(@"Watch_Title")
-                               width:boxWidth
-                                  at:y
-                           container:container
-                                 tag:1005];
-        y += rowHeight + rowSpacing;
-    }
     
     container.contentSize = CGSizeMake(w, y + 10);
 }
@@ -165,9 +134,7 @@ static NSString * const kWindowStatesKey = @"VLWindowStates";
     switch (tag) {
         case 1001: iconKey = @"memory_debug"; break;
         case 1004: iconKey = @"memory_results"; break;
-        case 1002: iconKey = @"toolbox"; break;
         case 1003: iconKey = @"memory_browser"; break;
-        case 1005: iconKey = @"watchpoint"; break;
     }
     
     UIImageView *iconView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 7, 30, 30)];
@@ -209,9 +176,7 @@ static NSString * const kWindowStatesKey = @"VLWindowStates";
     switch (tag) {
         case 1001: isWindowVisible = [VLMemorySearchVC isVisible]; break;
         case 1004: isWindowVisible = [VLMemResults isVisible]; break;
-        case 1002: isWindowVisible = [VLToolbox isVisible]; break;
         case 1003: isWindowVisible = [VLMemoryBrowserVC isVisible]; break;
-        case 1005: isWindowVisible = [VLWatchOverlay isVisible]; break;
     }
     // 如果持久化状态为开，或者窗口可见，则开关打开
     toggle.on = savedState || isWindowVisible;
@@ -264,17 +229,9 @@ static NSString * const kWindowStatesKey = @"VLWindowStates";
                 [self saveWindowState:1001 isOpen:YES];
                 [self saveWindowState:1004 isOpen:YES];
                 break;
-            case 1002:
-                [VLToolbox showMinimized];
-                [self saveWindowState:1002 isOpen:YES];
-                break;
             case 1003:
                 [VLMemoryBrowserVC showMinimized];
                 [self saveWindowState:1003 isOpen:YES];
-                break;
-            case 1005:
-                [VLWatchOverlay showMinimized];
-                [self saveWindowState:1005 isOpen:YES];
                 break;
         }
     } else {
@@ -294,17 +251,9 @@ static NSString * const kWindowStatesKey = @"VLWindowStates";
                 [self saveWindowState:1001 isOpen:NO];
                 [self saveWindowState:1004 isOpen:NO];
                 break;
-            case 1002:
-                [VLToolbox hide];
-                [self saveWindowState:1002 isOpen:NO];
-                break;
             case 1003:
                 [VLMemoryBrowserVC hide];
                 [self saveWindowState:1003 isOpen:NO];
-                break;
-            case 1005:
-                [VLWatchOverlay hide];
-                [self saveWindowState:1005 isOpen:NO];
                 break;
         }
     }
