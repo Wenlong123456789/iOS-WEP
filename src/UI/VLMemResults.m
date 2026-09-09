@@ -7,11 +7,8 @@
 #import "VLMemResults.h"
 #import "VLPanelSizeHelper.h"
 #import "VLMemoryBrowser.h"
-#import "VLWatchOverlay.h"
-#import "VLToolbox.h"
 #import "VLDockBadge.h"
 #import "../Engine/VLMemEngine.h"
-#import "../Engine/VLDebugEngine.h"
 #import "../Utils/VLLocalization.h"
 #import "../Utils/VLIconManager.h"
 #import <objc/runtime.h>
@@ -243,8 +240,6 @@ static VLMemResultsImpl *g_memResults = nil;
         _searchValues = [NSMutableDictionary dictionary];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onLanguageChanged) name:@"VansonLanguageChanged" object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onResultsRestore) name:@"VLMemResultsDidRestore" object:nil];
-        // 提前触发 VLToolbox +initialize，确保锁定通知监听器在锁定按钮可用之前注册
-        (void)[VLToolbox class];
     }
     return self;
 }
@@ -788,7 +783,7 @@ static VLMemResultsImpl *g_memResults = nil;
         lockBtn.hidden = NO;
         CGFloat lockBtnW = 50;
         CGFloat viewBtnW = 40;
-        CGFloat watchBtnW = [VLDebugEngine isAvailable] ? 40 : 0;
+        CGFloat watchBtnW = 0; // Watchpoint 功能已移除
         CGFloat valueLabelW = 70;
         lockBtn.frame = CGRectMake(cellW - lockBtnW - 8, 11, lockBtnW, 30);
         viewBtn.frame = CGRectMake(cellW - lockBtnW - viewBtnW - 12, 11, viewBtnW, 30);
@@ -797,15 +792,8 @@ static VLMemResultsImpl *g_memResults = nil;
         valueLabel.textAlignment = NSTextAlignmentRight;
     }
     
-    // Watch 按钮 (仅越狱环境显示, String模式下隐藏)
-    if (!isStringType) watchBtn.hidden = ![VLDebugEngine isAvailable];
-    if (!watchBtn.hidden) {
-        [watchBtn setTitle:VL(@"Watch_Btn") forState:UIControlStateNormal];
-        [watchBtn setTitleColor:[[UIColor cyanColor] colorWithAlphaComponent:0.7] forState:UIControlStateNormal];
-        objc_setAssociatedObject(watchBtn, "itemAddress", @(item.address), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        [watchBtn removeTarget:nil action:NULL forControlEvents:UIControlEventAllEvents];
-        [watchBtn addTarget:self action:@selector(onWatchTapped:) forControlEvents:UIControlEventTouchUpInside];
-    }
+    // Watch 按钮：Watchpoint 功能已移除，始终隐藏
+    watchBtn.hidden = YES;
     
     // 锁定状态
     cell.backgroundColor = isLocked ? [[UIColor cyanColor] colorWithAlphaComponent:0.15] : [[UIColor cyanColor] colorWithAlphaComponent:0.05];
@@ -871,19 +859,6 @@ static VLMemResultsImpl *g_memResults = nil;
                                                           }}];
     }
     [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:idx inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
-}
-
-- (void)onWatchTapped:(UIButton *)sender {
-    NSLog(@"[VLDebug-ObjC] onWatchTapped");
-    NSNumber *addrNum = objc_getAssociatedObject(sender, "itemAddress");
-    if (!addrNum) return;
-    uint64_t address = [addrNum unsignedLongLongValue];
-    NSLog(@"[VLDebug-ObjC] calling addWatchForAddress: 0x%llX", address);
-    [VLWatchOverlay addWatchForAddress:address];
-    // 自动打开断点监控面板，让用户能看到断点列表
-    if (![VLWatchOverlay isVisible]) {
-        [VLWatchOverlay show];
-    }
 }
 
 - (void)onViewTapped:(UIButton *)sender {
