@@ -191,11 +191,13 @@
 
     // 1. 初始化内存引擎
     [engine initialize];
-    [self appendStatus:[NSString stringWithFormat:@"引擎初始化: %@", engine.isReady ? @"OK" : @"未就绪(仍继续)"]];
+    // 浮点范围/容差 = 0（精确匹配）
+    engine.floatTolerance = 0;
+    [self appendStatus:[NSString stringWithFormat:@"引擎初始化: %@, floatTolerance=0", engine.isReady ? @"OK" : @"未就绪(仍继续)"]];
 
     const uint64_t rangeStart = 0x00000000ULL;
     const uint64_t rangeEnd   = 0x2000000000ULL;
-    const uint64_t nearbyRange = 10;   // 临近搜索范围都是 10
+    const uint64_t nearbyRange = 10;   // 临近搜索范围 10
 
     // 2. 搜索 F32 = 2.1（指定范围）
     [self appendStatus:@"搜索 F32 2.1 …"];
@@ -205,7 +207,7 @@
               rangeStart:rangeStart
                 rangeEnd:rangeEnd
               completion:^(NSUInteger count, NSString *msg) {
-        [self appendStatus:[NSString stringWithFormat:@"→ 0.55 结果: %lu (%@)", (unsigned long)count, msg ?: @"ok"]];
+        [self appendStatus:[NSString stringWithFormat:@"→ 2.1 结果: %lu (%@)", (unsigned long)count, msg ?: @"ok"]];
 
         // 3. 临近搜索 F32 6.656168e-43，范围 10
         [self appendStatus:@"临近搜索 F32 6.656168e-43 (range=10) …"];
@@ -229,9 +231,8 @@
     NSUInteger written = 0;
     NSUInteger skipped = 0;
 
-    // 目标值约等于 6.656168e-43
+    // 目标值约等于 6.656168e-43（容差 0：精确相等）
     const float targetVal = 6.656168e-43f;
-    const float eps = 1e-45f;  // float 可表示的极小正数量级
 
     for (NSUInteger i = 0; i < total; i++) {
         VLMemResultItem *item = [engine getResultAtIndex:i type:VMemDataTypeF32];
@@ -251,13 +252,12 @@
         NSString *cur = [engine readAddress:addr type:VMemDataTypeF32];
         float fval = cur ? [cur floatValue] : 0.0f;
 
-        // 判断是否接近 6.656168e-43（数值或字符串）
-        BOOL isTarget = (fabsf(fval - targetVal) <= eps) || (fval == targetVal);
-        if (!isTarget) {
-            if (cur &&
-                ([cur isEqualToString:@"6.656168e-43"] ||
-                 [cur isEqualToString:@"6.656168E-43"] ||
-                 [cur containsString:@"6.656168"])) {
+        // 浮点范围 0：精确相等，或字符串匹配
+        BOOL isTarget = (fval == targetVal);
+        if (!isTarget && cur) {
+            if ([cur isEqualToString:@"6.656168e-43"] ||
+                [cur isEqualToString:@"6.656168E-43"] ||
+                [cur containsString:@"6.656168"]) {
                 isTarget = YES;
             }
         }
