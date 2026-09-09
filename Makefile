@@ -28,6 +28,7 @@ VansonLoader_FILES = \
 	src/UI/VLPanelMemory.m \
 	src/UI/VLOverlayWindow.m \
 	src/UI/VLFloatingButton.m \
+	src/UI/VLDockBadge.m \
 	src/UI/VLMemorySearch.m \
 	src/UI/VLMemoryBrowser.m \
 	src/UI/VLStringEditorViewController.m \
