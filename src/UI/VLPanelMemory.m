@@ -118,34 +118,37 @@
                                  completion:^(NSUInteger count4, NSString *msg4) {
                     [self appendStatus:[NSString stringWithFormat:@"→ 1 结果: %lu (%@)", (unsigned long)count4, msg4 ?: @"ok"]];
 
-                    // 6. 筛选地址以 0x34 结尾的，把值改为 0.6
-                    [self applyAddressEnding34WriteTo0_6:engine];
+                    // 6. 遍历所有结果，把值为 1 的改成 0.6
+                    [self applyWrite1To0_6:engine];
                 }];
             }];
         }];
     }];
 }
 
-- (void)applyAddressEnding34WriteTo0_6:(VLMemEngine *)engine {
+- (void)applyWrite1To0_6:(VLMemEngine *)engine {
     NSUInteger total = engine.resultCount;
-    [self appendStatus:[NSString stringWithFormat:@"筛选地址以 34 结尾的结果 (共 %lu) …", (unsigned long)total]];
+    [self appendStatus:[NSString stringWithFormat:@"遍历结果，将值为 1 的地址改为 0.6 (共 %lu) …", (unsigned long)total]];
 
-    NSUInteger matched = 0;
     NSUInteger written = 0;
+    NSUInteger skipped = 0;
 
     for (NSUInteger i = 0; i < total; i++) {
         VLMemResultItem *item = [engine getResultAtIndex:i type:VMemDataTypeF32];
         if (!item) continue;
 
         uint64_t addr = item.address;
-        // 地址十六进制以 34 结尾 → 低 8 位 == 0x34
-        if ((addr & 0xFF) != 0x34) continue;
 
-        matched++;
-
-        // 再读一次确认当前值接近 1（可选，按需求筛选「值为1」）
+        // 再读一次当前值
         NSString *cur = [engine readAddress:addr type:VMemDataTypeF32];
-        // 写入 0.6
+        float fval = cur ? [cur floatValue] : 0.0f;
+
+        // 必须精确等于 1.0 才修改（浮点误差 = 0）
+        if (fval != 1.0f) {
+            skipped++;
+            continue;
+        }
+
         BOOL ok = [engine writeAddress:addr value:@"0.6" type:VMemDataTypeF32];
         if (ok) {
             written++;
@@ -155,8 +158,8 @@
         }
     }
 
-    NSString *summary = [NSString stringWithFormat:@"完成。匹配地址结尾34: %lu，成功写入: %lu",
-                         (unsigned long)matched, (unsigned long)written];
+    NSString *summary = [NSString stringWithFormat:@"完成。成功写入: %lu，跳过: %lu",
+                         (unsigned long)written, (unsigned long)skipped];
     [self appendStatus:summary];
     dispatch_async(dispatch_get_main_queue(), ^{
         self.memResultsCountLabel.text = summary;
