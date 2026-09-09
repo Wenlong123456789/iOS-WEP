@@ -229,9 +229,9 @@
     NSUInteger written = 0;
     NSUInteger skipped = 0;
 
-    // 目标值约等于 6.656168e-43（float 精度下用较小容差）
+    // 目标值约等于 6.656168e-43
     const float targetVal = 6.656168e-43f;
-    const float eps = 1e-50f;  // 极小容差，适配 denormal float
+    const float eps = 1e-45f;  // float 可表示的极小正数量级
 
     for (NSUInteger i = 0; i < total; i++) {
         VLMemResultItem *item = [engine getResultAtIndex:i type:VMemDataTypeF32];
@@ -251,15 +251,19 @@
         NSString *cur = [engine readAddress:addr type:VMemDataTypeF32];
         float fval = cur ? [cur floatValue] : 0.0f;
 
-        // 判断是否接近 6.656168e-43
-        if (fabsf(fval - targetVal) > eps && fval != targetVal) {
-            // 也尝试用字符串精确匹配，防止 float 解析差异
-            if (![cur isEqualToString:@"6.656168e-43"] &&
-                ![cur isEqualToString:@"6.656168E-43"] &&
-                ![cur containsString:@"6.656168"]) {
-                skipped++;
-                continue;
+        // 判断是否接近 6.656168e-43（数值或字符串）
+        BOOL isTarget = (fabsf(fval - targetVal) <= eps) || (fval == targetVal);
+        if (!isTarget) {
+            if (cur &&
+                ([cur isEqualToString:@"6.656168e-43"] ||
+                 [cur isEqualToString:@"6.656168E-43"] ||
+                 [cur containsString:@"6.656168"])) {
+                isTarget = YES;
             }
+        }
+        if (!isTarget) {
+            skipped++;
+            continue;
         }
 
         // 写入 1
