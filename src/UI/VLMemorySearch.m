@@ -37,8 +37,8 @@ extern BOOL g_touchPassthroughMode;
 - (void)undock;
 @end
 
-// 全局状态
-VMemDataType g_currentType = VMemDataTypeI32;
+// 全局状态（g_currentType 定义于 VLPanel.m）
+extern VMemDataType g_currentType;
 static BOOL g_isSearching = NO;
 static BOOL g_isFirstSearch = YES;
 static BOOL g_isFuzzyLocked = NO;  // 模糊搜索锁定状态
