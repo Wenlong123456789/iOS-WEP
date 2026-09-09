@@ -43,6 +43,56 @@ static UIWindow *VLFloatingSafeWindow(VLFloatingButton *button) {
     return btn;
 }
 
++ (void)installIfNeeded {
+    static BOOL installed = NO;
+    if (installed) return;
+
+    UIWindow *targetWindow = nil;
+
+    // 优先使用 OverlayWindow
+    Class overlayClass = NSClassFromString(@"VLOverlayWindow");
+    if (overlayClass && [overlayClass respondsToSelector:@selector(shared)]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        targetWindow = [overlayClass performSelector:@selector(shared)];
+#pragma clang diagnostic pop
+        if (targetWindow) {
+            if ([targetWindow respondsToSelector:@selector(attachActiveSceneIfNeeded)]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                [targetWindow performSelector:@selector(attachActiveSceneIfNeeded)];
+#pragma clang diagnostic pop
+            }
+            targetWindow.hidden = NO;
+        }
+    }
+
+    // 兜底使用安全窗口
+    if (!targetWindow) {
+        targetWindow = GetSafeWindow();
+    }
+
+    if (!targetWindow) return;
+
+    VLFloatingButton *btn = [self sharedButton];
+
+    // 已经加过就不再重复添加
+    if (btn.superview == targetWindow) {
+        installed = YES;
+        return;
+    }
+
+    [btn removeFromSuperview];
+    [targetWindow addSubview:btn];
+    [targetWindow bringSubviewToFront:btn];
+
+    // 更新位置
+    [btn updatePositionForCurrentWindowIfNeeded];
+
+    installed = YES;
+    NSLog(@"[VansonLoader] FloatingButton installed successfully");
+}
+
 - (void)setupButton {
     UIWindow *window = VLFloatingSafeWindow(self);
     CGRect bounds = window ? window.bounds : [UIScreen mainScreen].bounds;
