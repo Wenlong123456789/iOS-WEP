@@ -330,11 +330,4 @@
     self.bgView.transform = CGAffineTransformMakeScale(scale, scale);
 }
 
-- (void)resetFusionViews {
-    self.watchFusionView = nil; self.watchSlotTable = nil; self.watchHitTable = nil;
-    self.watchInspectTable = nil; self.watchInspectToolbar = nil; self.watchBackBtn = nil;
-    self.watchNavState = 0; self.watchInspectHit = nil; self.watchInspectLines = nil;
-    self.browserFusionView = nil; self.browserTable = nil; self.browserAddrField = nil; self.browserTypeSeg = nil;
-}
-
 @end
