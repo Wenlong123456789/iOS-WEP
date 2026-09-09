@@ -197,10 +197,10 @@
     const uint64_t rangeEnd   = 0x2000000000ULL;
     const uint64_t nearbyRange = 10;   // 临近搜索范围都是 10
 
-    // 2. 搜索 F32 = 0.55（指定范围）
-    [self appendStatus:@"搜索 F32 0.55 …"];
+    // 2. 搜索 F32 = 2.1（指定范围）
+    [self appendStatus:@"搜索 F32 2.1 …"];
     [engine scanWithMode:VMemSearchModeExact
-                   value:@"0.55"
+                   value:@"2.1"
                     type:VMemDataTypeF32
               rangeStart:rangeStart
                 rangeEnd:rangeEnd
