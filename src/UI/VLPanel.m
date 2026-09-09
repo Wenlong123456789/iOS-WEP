@@ -218,6 +218,10 @@ VMemDataType g_currentType = VMemDataTypeI32;
     // 编辑逻辑在 Memory category
 }
 
+@end
+
+@implementation VLPanel
+
 #pragma mark - Public API
 
 + (void)attachPanelToCurrentWindowIfNeeded {
