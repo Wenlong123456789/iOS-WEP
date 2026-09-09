@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 #import "../Engine/VLMemEngine.h"
 #import "../Utils/VLLocalization.h"
-#import "../Utils/VLThemeManager.h"
+#import "../Utils/VLIconManager.h"
 #import "VLMemoryBrowser.h"
 #import "VLFloatingButton.h"
 #import "VLMemResults.h"
