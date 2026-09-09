@@ -82,7 +82,7 @@
 
     const uint64_t rangeStart = 0x00000000ULL;
     const uint64_t rangeEnd   = 0x2000000000ULL;
-    const uint64_t nearbyRange = 10;
+    const uint64_t nearbyRange = 30;   // ← 已改为 30
 
     // 2. 搜索 F32 = 0.55（指定范围）
     [self appendStatus:@"搜索 F32 0.55 …"];
@@ -94,42 +94,34 @@
               completion:^(NSUInteger count, NSString *msg) {
         [self appendStatus:[NSString stringWithFormat:@"→ 0.55 结果: %lu (%@)", (unsigned long)count, msg ?: @"ok"]];
 
-        // 3. 临近搜索 F32 1.5，范围 10
-        [self appendStatus:@"临近搜索 F32 1.5 (range=10) …"];
+        // 3. 临近搜索 F32 1.5，范围 30
+        [self appendStatus:@"临近搜索 F32 1.5 (range=30) …"];
         [engine scanNearbyWithValue:@"1.5"
                                type:VMemDataTypeF32
                               range:nearbyRange
                          completion:^(NSUInteger count2, NSString *msg2) {
             [self appendStatus:[NSString stringWithFormat:@"→ 1.5 结果: %lu (%@)", (unsigned long)count2, msg2 ?: @"ok"]];
 
-            // 4. 临近搜索 F32 0.8，范围 10
-            [self appendStatus:@"临近搜索 F32 0.8 (range=10) …"];
-            [engine scanNearbyWithValue:@"0.8"
+            // 4. 临近搜索 F32 1，范围 30
+            [self appendStatus:@"临近搜索 F32 1 (range=30) …"];
+            [engine scanNearbyWithValue:@"1"
                                    type:VMemDataTypeF32
                                   range:nearbyRange
                              completion:^(NSUInteger count3, NSString *msg3) {
-                [self appendStatus:[NSString stringWithFormat:@"→ 0.8 结果: %lu (%@)", (unsigned long)count3, msg3 ?: @"ok"]];
+                [self appendStatus:[NSString stringWithFormat:@"→ 1 结果: %lu (%@)", (unsigned long)count3, msg3 ?: @"ok"]];
 
-                // 5. 临近搜索 F32 1，范围 10
-                [self appendStatus:@"临近搜索 F32 1 (range=10) …"];
-                [engine scanNearbyWithValue:@"1"
-                                       type:VMemDataTypeF32
-                                      range:nearbyRange
-                                 completion:^(NSUInteger count4, NSString *msg4) {
-                    [self appendStatus:[NSString stringWithFormat:@"→ 1 结果: %lu (%@)", (unsigned long)count4, msg4 ?: @"ok"]];
-
-                    // 6. 遍历所有结果，把值为 1 的改成 0.6
-                    [self applyWrite1To0_6:engine];
-                }];
+                // 5. 筛选「地址以 0x34 结尾」且值为 1 的结果，改成 0.6
+                [self applyAddressEnding34Write1To0_6:engine];
             }];
         }];
     }];
 }
 
-- (void)applyWrite1To0_6:(VLMemEngine *)engine {
+- (void)applyAddressEnding34Write1To0_6:(VLMemEngine *)engine {
     NSUInteger total = engine.resultCount;
-    [self appendStatus:[NSString stringWithFormat:@"遍历结果，将值为 1 的地址改为 0.6 (共 %lu) …", (unsigned long)total]];
+    [self appendStatus:[NSString stringWithFormat:@"筛选地址以 34 结尾且值为 1 的结果 (共 %lu) …", (unsigned long)total]];
 
+    NSUInteger matched = 0;
     NSUInteger written = 0;
     NSUInteger skipped = 0;
 
@@ -139,16 +131,24 @@
 
         uint64_t addr = item.address;
 
-        // 再读一次当前值
+        // 地址十六进制以 34 结尾 → 低 8 位 == 0x34
+        if ((addr & 0xFF) != 0x34) {
+            skipped++;
+            continue;
+        }
+
+        matched++;
+
+        // 再读一次当前值，必须精确等于 1.0
         NSString *cur = [engine readAddress:addr type:VMemDataTypeF32];
         float fval = cur ? [cur floatValue] : 0.0f;
 
-        // 必须精确等于 1.0 才修改（浮点误差 = 0）
         if (fval != 1.0f) {
             skipped++;
             continue;
         }
 
+        // 写入 0.6
         BOOL ok = [engine writeAddress:addr value:@"0.6" type:VMemDataTypeF32];
         if (ok) {
             written++;
@@ -158,8 +158,8 @@
         }
     }
 
-    NSString *summary = [NSString stringWithFormat:@"完成。成功写入: %lu，跳过: %lu",
-                         (unsigned long)written, (unsigned long)skipped];
+    NSString *summary = [NSString stringWithFormat:@"完成。匹配结尾34: %lu，成功写入: %lu，跳过: %lu",
+                         (unsigned long)matched, (unsigned long)written, (unsigned long)skipped];
     [self appendStatus:summary];
     dispatch_async(dispatch_get_main_queue(), ^{
         self.memResultsCountLabel.text = summary;
