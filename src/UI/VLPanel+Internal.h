@@ -114,7 +114,6 @@ static const NSInteger kPageSize = 50;
 - (void)addDoneButtonTo:(UITextField *)field;
 - (void)resetFusionViews;
 - (void)stopBrowserRefreshTimer;
-- (void)updateMemLocks;
 
 @end
 
@@ -147,5 +146,5 @@ static const NSInteger kPageSize = 50;
 - (void)handleMemResultLongPress:(UILongPressGestureRecognizer *)gr;
 - (void)onMemFuzzySelected:(id)sender;
 - (void)onTest1Tapped;
+- (void)updateMemLocks;
 @end
-
